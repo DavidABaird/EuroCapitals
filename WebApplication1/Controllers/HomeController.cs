@@ -20,20 +20,27 @@ namespace WebApplication1.Controllers
         public ActionResult Index()
         {
             string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=master;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
-            SqlConnection connection = new SqlConnection(connectionString);
-            connection.Open();
-            String weatherQuerey = "SELECT * FROM WeatherInstance WHERE LEN(fetchTimeStamp) < 14";
-            using (SqlCommand cmd = new SqlCommand(weatherQuerey, connection))
+            try
             {
-                using (SqlDataReader reader = cmd.ExecuteReader())
+                SqlConnection connection = new SqlConnection(connectionString);
+                connection.Open();
+                String weatherQuerey = "SELECT * FROM WeatherInstance ORDER BY fetchTimeStamp DESC";
+                using (SqlCommand cmd = new SqlCommand(weatherQuerey, connection))
                 {
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
 
-                    ViewBag.allWeather = sqlReaderJsonSerializer(reader);
+                        ViewBag.allWeather = sqlReaderJsonSerializer(reader);
 
+                    }
                 }
-            }
 
-            connection.Close();
+                connection.Close();
+            }
+            catch(SqlException sqlE)
+            {
+                Debug.WriteLine("Error retrieving weather data from database");
+            }
             return View();
         }
         /*
